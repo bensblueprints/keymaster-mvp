@@ -1,0 +1,16 @@
+services:
+  keymaster:
+    build: .
+    ports:
+      - "5328:5328"
+    environment:
+      - PORT=5328
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - BASE_URL=${BASE_URL:-http://localhost:5328}
+      - DATA_DIR=/data
+    volumes:
+      - keymaster-data:/data
+    restart: unless-stopped
+
+volumes:
+  keymaster-data:
