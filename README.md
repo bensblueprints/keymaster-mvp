@@ -82,7 +82,7 @@ Full API reference, webhook signature verification and a Stripe/Whop key-issuing
 
 Want the packaged, ready-to-run version with a Windows installer and priority support? Grab it on Whop:
 
-**[→ Get Keymaster on Whop](https://whop.com/onetime-suite)**
+**[→ Get Keymaster on Whop](https://whop.com/benjisaiempire/keymaster-app)**
 
 ## Tech stack
 
