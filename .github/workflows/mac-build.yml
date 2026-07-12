@@ -1,0 +1,84 @@
+# macOS DMG build for OneTimeSuite Electron apps.
+#
+# Triggers:
+#   - Manually from the Actions tab (workflow_dispatch)
+#   - When a GitHub release is published (DMG gets attached to the release)
+#   - When a v* tag is pushed
+#
+# NOTE: The DMG is UNSIGNED — we have no Apple Developer ID yet. macOS
+# Gatekeeper will warn on first launch. Users must right-click the app →
+# Open (twice), or run: xattr -d com.apple.quarantine "/Applications/App.app"
+# Signing + notarization can be added later via CSC_LINK / CSC_KEY_PASSWORD
+# secrets and an Apple Developer account ($99/yr) — see electron-builder docs.
+
+name: Mac Build
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # needed to attach the DMG to a release
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # only enable npm cache when a lockfile exists (setup-node errors otherwise)
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build frontend (if present)
+        shell: bash
+        run: |
+          if node -e "const s=require('./package.json').scripts||{};process.exit(s.build?0:1)"; then
+            npm run build
+          else
+            echo "No frontend build script - skipping"
+          fi
+
+      - name: Build DMG
+        shell: bash
+        # -c.mac.* CLI overrides cover apps whose electron-builder config has
+        # no "mac" section; they are harmless no-ops for apps that already do.
+        run: |
+          npx electron-builder --mac dmg --publish never \
+            -c.mac.category=public.app-category.productivity \
+            -c.mac.target=dmg
+        env:
+          # No Apple Developer certs configured — skip code signing entirely.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: |
+            dist/*.dmg
+            release/*.dmg
+          if-no-files-found: error
+
+      - name: Attach DMG to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.dmg
+            release/*.dmg
