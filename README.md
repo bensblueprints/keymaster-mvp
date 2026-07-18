@@ -1,5 +1,9 @@
 # 🔑 Keymaster — Self-Hosted License Key Server
 
+## Demo
+
+VIDEO-PLACEHOLDER
+
 [![MIT License](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
 
 **Pay once. Own it forever. No subscription — and no platform skimming 5–10% off every sale you make.**
