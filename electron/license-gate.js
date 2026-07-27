@@ -15,7 +15,11 @@
  *   license:deactivateThisDevice
  */
 const { app, dialog, shell, ipcMain } = require('electron');
-const license = require('./whop-license');
+// ESM apps vendor these as .cjs; Node's CJS resolver will not try a .cjs
+// extension for an extensionless require, so fall back explicitly.
+let license;
+try { license = require('./whop-license'); }
+catch { license = require('./whop-license.cjs'); }
 
 const stateDir = () => app.getPath('userData');
 const fmt = t => { try { return new Date(t).toLocaleDateString(); } catch { return '?'; } };
