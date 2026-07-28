@@ -5,14 +5,10 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const crypto = require('crypto');
-const { gateLicense, registerLicenseIpc } = require('./license-gate');
 
 let win;
 
 app.whenReady().then(async () => {
-  if (!(await gateLicense())) return; // quit already requested
-  registerLicenseIpc();
-
   const dataDir = path.join(app.getPath('userData'), 'data');
   const autologinToken = crypto.randomBytes(24).toString('hex');
 
