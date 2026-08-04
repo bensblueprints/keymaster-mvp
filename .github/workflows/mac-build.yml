@@ -36,6 +36,17 @@ jobs:
           # only enable npm cache when a lockfile exists (setup-node errors otherwise)
           cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
 
+      # macOS runners now ship Python 3.12, which removed distutils. The gyp
+      # bundled with node-gyp still imports it, so any native module that falls
+      # back to a source build dies with "No module named 'distutils'" before it
+      # compiles a line. setuptools puts distutils back.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore distutils for node-gyp
+        run: python -m pip install --upgrade setuptools
+
       - name: Install dependencies
         shell: bash
         run: |
